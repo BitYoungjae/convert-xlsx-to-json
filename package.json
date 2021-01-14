@@ -17,5 +17,10 @@
     "email": "bityoungjae@gmail.com",
     "url": "https://bityoungjae.com"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "xlsx": "^0.16.9",
+    "yargs": "^16.2.0"
+  }
 }
