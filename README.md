@@ -60,7 +60,10 @@ _아래와 같은 내용의 xlsx 파일이 있다고 가정하겠습니다._
 npx convert-xlsx-to-json gen --from ./data.xlsx --to ./data.json --propKeys name age country etc
 ```
 
-`from` 매개변수로 전달된 `./data.xlsx`는 변환의 대상이 되는 xlsx 파일의 경로이며, `to` 매개변수로 전달된 `./data.json`은 출력물인 JSON 파일이 저장될 경로입니다.
+`from` 매개변수로 전달된 `./data.xlsx`는 변환의 대상이 되는 xlsx 파일의 경로이며,<br/>
+`to` 매개변수로 전달된 `./data.json`은 출력물인 JSON 파일이 저장될 경로입니다.
+
+`xlsx` 상에서 각각의 행으로 표현된 `entity`들은 `propKeys` 매개변수로 전달된 `키`들을 `속성명`으로 삼아 `JSON Object`로 변환이 됩니다.
 
 변환된 `data.json`의 내용물은 아래와 같습니다.
 
@@ -81,14 +84,12 @@ npx convert-xlsx-to-json gen --from ./data.xlsx --to ./data.json --propKeys name
 ]
 ```
 
-`xlsx` 상에서 각각의 행으로 표현된 `entity`들은 `propKeys` 매개변수로 전달된 `키`들을 `속성명`으로 삼아 `JSON Object`로 변환이 됩니다.
-
 ### 파일 경로에 관한 TIP
 
-> **파일 경로는 상대경로와 절대경로 두가지 방법으로 지정하실 수 있습니다.**
+> **파일 경로는 상대경로와 절대경로 두가지 방법으로 지정하실 수 있습니다.**<br/>
 > 상대경로로 지정할 경우 convert-xlsx-to-json 명령어를 호출한 경로를 기준삼아 파일 경로를 계산합니다.
 > 
-> **to 매개변수의 경우 생략이 될 수 있습니다.**
+> **to 매개변수의 경우 생략이 될 수 있습니다.**<br/>
 > 생략될 경우 xlsx 파일의 파일명에 따라 json 파일명이 자동으로 지정됩니다.
  
 아래의 명령어 예시의 경우 `data.xlsx` 파일로부터 `data.json` 파일을 생성합니다.
@@ -106,7 +107,7 @@ _역시 같은 데이터가 xlsx 파일로 준비되어 있다고 가정하겠�
 | BitYoungjae | 30 | South Korea | 잡다한 것 만들기를 좋아한다. |
 | Kakarot | 39 | Vegeta | Munchkin |
 
-이 중에서 우리는 `이름`과 `국적`에 해당하는 데이터만 JSON으로 추출하고 싶습니다.
+이 중에서 우리는 `이름`과 `국적`에 해당하는 데이터만 JSON으로 추출하고 싶습니다.<br/>
 그럴 때는 propKeys 매개변수에 _를 사용하여 해당하는 위치의 데이터를 결과물에서 제외할 수 있습니다.
 
 ```shell
@@ -140,7 +141,7 @@ _이번에도 같은 데이터가 xlsx 파일로 준비되어 있다고 가정�
 | BitYoungjae | 30 | South Korea | 잡다한 것 만들기를 좋아한다. |
 | Kakarot | 39 | Vegeta | Munchkin |
 
-만약 `propKeys`로 주어진 속성명의 갯수가 xlsx 상의 특정 `entity`의 실제 컬럼 갯수보다 작을 경우,
+만약 `propKeys`로 주어진 속성명의 갯수가 xlsx 상의 특정 `entity`의 실제 컬럼 갯수보다 작을 경우,<br/>
 주어진 속성명 갯수 이후의 데이터는 결과물에서 자동으로 무시됩니다.
 
 ```shell
@@ -174,7 +175,7 @@ npx convert-xlsx-to-json gen --from ./data.xlsx --to ./data.json --propKeys name
 | **국적** | **South Korea** | **Vegeta** |
 | **기타 설명** | **잡다한 것 만들기를 좋아한다.** | **Munchkin** |
 
-첫번째 열이 테이블 헤더의 역할을 하고, 이후의 열들이 각각의 entity를 구성하는 형태입니다.
+첫번째 열이 테이블 헤더의 역할을 하고, 이후의 열들이 각각의 entity를 구성하는 형태입니다.<br/>
 이런 형태의 데이터는 `--columnEntity` 매개변수를 추가하여 의도한대로 변환이 가능합니다.
 
 ```shell
@@ -233,13 +234,13 @@ npx convert-xlsx-to-json gen --from ./data.xlsx --to ./data.json --propKeys name
 
 ### 특정 시트를 지정하고 싶을 때
 
-`convert-xlsx-to-json`은 별도의 설정이 없으면 첫번째 시트의 데이터만을 변환합니다.
+`convert-xlsx-to-json`은 별도의 설정이 없으면 첫번째 시트의 데이터만을 변환합니다.<br/>
 만약 특정 시트를 지정하여 변환하고자 한다면 `--sheetIndex` 매개변수를 이용해 특정 시트를 지정하실 수 있습니다.
 
-시트의 이름이 아닌 몇번째 시트인지를 매개변수의 값으로 전달해주셔야 합니다.
-시트의 index는 0-based numbering을 따릅니다.
+시트의 이름이 아닌 몇번째 시트인지를 가리키는 index값을 매개변수의 값으로 전달해주셔야 합니다.<br/>
+시트의 index는 `0-based numbering`을 따릅니다.
 
-즉, 첫번째 시트는 숫자 0으로 지정할 수 있으며 두번째는 1 세번째는 2로 지정해주셔야만 합니다.
+**즉, 첫번째 시트는 숫자 0으로 지정할 수 있으며 두번째는 1 세번째는 2로 지정해주셔야만 합니다.**
 
 아래는 세번째 시트의 데이터만을 변환하는 내용의 명령어 예시 입니다.
 
@@ -249,7 +250,7 @@ npx convert-xlsx-to-json gen --from ./data.xlsx --propKeys name age --sheetIndex
 
 ## xlsx 변환 api로 사용시
 
-혹시 xlsx 파일을 JSON 파일로 저장하는 것에는 관심이 없고,
+혹시 xlsx 파일을 JSON 파일로 저장하는 것에는 관심이 없고,<br/>
 위와 같은 규칙으로 단순 xlsx 파일을 자바스크립트 데이터로 변환만하고 싶으시다면
 
 아래처럼 활용도 가능합니다.
