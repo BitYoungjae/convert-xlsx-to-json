@@ -1,0 +1,21 @@
+{
+  "name": "convert-xlsx-to-json",
+  "version": "0.1.0",
+  "description": "xlsx를 json 파일로 변환한다.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "json",
+    "cli"
+  ],
+  "author": {
+    "name": "BitYoungjae",
+    "email": "bityoungjae@gmail.com",
+    "url": "https://bityoungjae.com"
+  },
+  "license": "MIT"
+}
