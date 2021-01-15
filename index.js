@@ -11,6 +11,13 @@ const yargs = require('yargs');
 
 // Helper Functions
 
+const A1StyleRegex = /^([A-Z]+[0-9]+)(?::([A-Z]+[0-9]+))?$/i;
+
+const forceMkdir = dirPath => {
+  const isExistDir = fs.existsSync(dirPath);
+  if (!isExistDir) fs.mkdirSync(dirPath, {recursive: true});
+};
+
 const getDefaultOutputPath = srcFilePath => {
   const {name} = path.parse(srcFilePath);
   const outPutFileName = `${name}.json`;
@@ -43,13 +50,13 @@ const getWorkSheet = (workbook, sheetIndex = 0) => {
   return worksheet;
 };
 
-const sheetToArray = (worksheet, startingRow = 0) => {
+const sheetToArray = (worksheet, range = 0) => {
   return XLSX.utils.sheet_to_json(worksheet, {
     // header: 1 옵션으로 worksheet를 2D Array로 변환한다.
     header: 1,
     // 공백인 줄은 output에 포함하지 않음.
     blankrows: false,
-    range: startingRow,
+    range: range,
   });
 };
 
@@ -89,9 +96,10 @@ const xlsxToJSON = (
   propKeys,
   sheetIndex = 0,
   omitHeader = true,
-  columnEntity = false
+  columnEntity = false,
+  range
 ) => {
-  validateParams(propKeys, sheetIndex);
+  validateParams(range, propKeys, sheetIndex);
 
   const resolvedXlsxPath = resolvePath(xlsxPath);
   const workbook = XLSX.readFile(resolvedXlsxPath, {
@@ -101,7 +109,7 @@ const xlsxToJSON = (
   });
 
   const worksheet = getWorkSheet(workbook, sheetIndex);
-  const rowList = sheetToArray(worksheet, omitHeader ? 1 : 0);
+  const rowList = sheetToArray(worksheet, range || (omitHeader ? 1 : 0));
   const targetData = columnEntity ? transposeArr(rowList) : rowList;
   const outputData = targetData.map(row => rowToMap(row, propKeys));
 
@@ -128,7 +136,12 @@ const log = {
   },
 };
 
-const validateParams = (propKeys, sheetIndex) => {
+const validateParams = (range, propKeys, sheetIndex) => {
+  if (typeof range === 'string' && !range.match(A1StyleRegex))
+    throw new Error(
+      'range 매개변수에는 A1 스타일의 문자열만 포함될 수 있습니다. ex : A1:C5'
+    );
+
   if (sheetIndex < 0) throw new Error('sheetIndex는 음수값이 될 수 없습니다.');
 
   const lodashRemoved = propKeys.filter(propKey => propKey !== '_');
@@ -147,39 +160,51 @@ yargs
     describe: 'xlsx 파일을 json으로 파싱해 저장한다.',
     builder: {
       from: {
+        alias: 'f',
         describe: 'xlsx 파일 경로',
         demandOption: true,
         type: 'string',
       },
       to: {
+        alias: 't',
         describe: '저장할 json 파일 경로',
         type: 'string',
       },
       propKeys: {
+        alias: 'p',
         describe:
           'propKey로 사용될 리스트. _로 표시된 순번은 결과물에 포함하지 않는다.',
         type: 'array',
         demandOption: true,
       },
       sheetIndex: {
+        alias: 'i',
         describe: '변환할 시트 인덱스 (0부터 시작)',
         type: 'number',
         default: 0,
       },
       omitHeader: {
+        alias: 'o',
         describe: '첫번째 행 혹은 열을 생략할지 여부',
         type: 'boolean',
         default: true,
       },
       columnEntity: {
+        alias: 'c',
         describe: '데이터를 열 단위로 해석할지의 여부',
         type: 'boolean',
         default: false,
+      },
+      range: {
+        alias: 'r',
+        describe: 'A1 스타일로 표현된 해석할 셀의 범위',
+        type: 'string',
       },
     },
     handler: async ({
       from: xlsxPath,
       to: outputPath,
+      range,
       propKeys,
       sheetIndex,
       omitHeader,
@@ -188,7 +213,9 @@ yargs
       log.info('xlsx 파일로부터 JSON 파일을 생성합니다...');
       log.info(`${sheetIndex} 번째 시트를 변환합니다.`);
 
-      if (omitHeader) {
+      if (range) {
+        log.info(`${range} 범위의 데이터만을 변환합니다.`);
+      } else if (omitHeader) {
         log.info(
           `첫번째 ${columnEntity ? '열' : '행'}은 출력물에 포함시키지 않습니다.`
         );
@@ -201,19 +228,21 @@ yargs
       );
 
       try {
-        validateParams(propKeys, sheetIndex);
-
         const outputData = xlsxToJSON(
           xlsxPath,
           propKeys,
           sheetIndex,
           omitHeader,
-          columnEntity
+          columnEntity,
+          range
         );
 
         const resolvedOutputPath = outputPath
           ? resolvePath(outputPath, false)
           : getDefaultOutputPath(xlsxPath);
+
+        const {dir: outputDirPath} = path.parse(resolvedOutputPath);
+        forceMkdir(outputDirPath);
 
         await fsPromises.writeFile(
           resolvedOutputPath,

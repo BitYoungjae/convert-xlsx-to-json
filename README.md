@@ -9,19 +9,22 @@
     - [NPM](#npm)
     - [yarn](#yarn)
   - [CLI 도구로 사용시](#cli-도구로-사용시)
+    - [npx로 실행](#npx로-실행)
+    - [전역 설치 후 실행](#전역-설치-후-실행)
+    - [gen 메서드](#gen-메서드)
+    - [매개변수 종류](#매개변수-종류)
     - [기본 사용법](#기본-사용법)
     - [파일 경로에 관한 TIP](#파일-경로에-관한-tip)
     - [특정 열 제외하기](#특정-열-제외하기)
     - [앞부분 일부만 포함시키기](#앞부분-일부만-포함시키기)
     - [첫번째 열을 헤더로 사용하는 경우](#첫번째-열을-헤더로-사용하는-경우)
     - [헤더가 없는 경우](#헤더가-없는-경우)
+    - [특정 범위를 지정하고 싶을 때](#특정-범위를-지정하고-싶을-때)
     - [특정 시트를 지정하고 싶을 때](#특정-시트를-지정하고-싶을-때)
   - [xlsx 변환 api로 사용시](#xlsx-변환-api로-사용시)
     - [매개변수 정보](#매개변수-정보)
 
 ## 설치
-
-CLI 도구만 사용하길 희망하신다면 `npx convert-xlsx-to-json ...params`로 설치 없이 사용하실 수 있습니다.
 
 ### NPM
 
@@ -44,6 +47,41 @@ yarn add convert-xlsx-to-json
 ```
 
 ## CLI 도구로 사용시
+
+### npx로 실행
+
+CLI 도구만 사용하길 희망하신다면 `npx convert-xlsx-to-json ...params`로 설치 없이 사용하실 수 있습니다.
+
+### 전역 설치 후 실행
+
+혹시 npm 혹은 yarn을 이용해 해당 패키지를 전역 설치 하셨다면,
+아래의 명령어들을 콘솔상에서 직접 사용하실 수도 있습니다.
+
+```shell
+convert-xlsx-to-json gen -f ./target.json -p age name
+
+# 같은 동작을 합니다.
+xlsx-to-json gen -f ./target.json -p age name
+```
+
+### gen 메서드
+
+현재 오직 `gen` 메서드 하나만을 지원합니다.<br/>
+이 메서드는 xlsx 파일로부터 json 파일을 생성해 저장하는 동작을 담당합니다.
+
+### 매개변수 종류
+
+gen 메서드에는 아래의 매개변수들이 추가로 전달될 수 있습니다.
+
+| Parameter | Alias | required? | default | Description | Example |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| --from | -f | ✅ |  | 변환할 xlsx 파일의 경로 | -f ./target.xlsx |
+| --to | -t |  | 현재 경로/[xslx파일명].json | 저장될 JSON 파일의 경로 | -t ./json/out.json |
+| --propKeys | -p | ✅ |  | propKey로 사용될 리스트. _로 표시된 순번은 결과물에 포함하지 않는다. | -p name age _ ext |
+| --sheetIndex | -i |  | 0 | 변환할 시트 인덱스 (0부터 시작) | -i 1 |
+| --omitHeader | -o |  | true | 첫번째 행 혹은 열을 생략할지 여부 | -o |
+| --columnEntity | -c |  | false | 데이터를 열 단위로 해석할지의 여부 | -c |
+| --range | -r |  |  | A1 스타일로 표현된 해석할 셀의 범위. omitHeader 옵션은 무시된다. | -r A1 or -r A1:C8 |
 
 ### 기본 사용법
 
@@ -90,7 +128,8 @@ npx convert-xlsx-to-json gen --from ./data.xlsx --to ./data.json --propKeys name
 > 상대경로로 지정할 경우 convert-xlsx-to-json 명령어를 호출한 경로를 기준삼아 파일 경로를 계산합니다.
 > 
 > **to 매개변수의 경우 생략이 될 수 있습니다.**<br/>
-> 생략될 경우 xlsx 파일의 파일명에 따라 json 파일명이 자동으로 지정됩니다.
+> 생략될 경우 xlsx 파일의 파일명에 따라 json 파일명이 자동으로 지정됩니다.<br/>
+> _존재하지 않는 경로일 경우 강제로 생성합니다._
  
 아래의 명령어 예시의 경우 `data.xlsx` 파일로부터 `data.json` 파일을 생성합니다.
 
@@ -232,6 +271,15 @@ npx convert-xlsx-to-json gen --from ./data.xlsx --to ./data.json --propKeys name
 ]
 ```
 
+### 특정 범위를 지정하고 싶을 때
+
+기본적으로 convert-xlsx-to-json은 A1 셀부터 시작되는 데이터 테이블이 있음을 전제로 동작합니다.<br/>
+하지만 혹시 특정 범위의 셀 영역을 변환하고 싶으시다면 `--range` 매개변수를 이용해 지정하실수도 있습니다.
+
+```shell
+npx convert-xlsx-to-json gen --from ./data.xlsx --to ./data.json --propKeys name age --range C5:Z9
+```
+
 ### 특정 시트를 지정하고 싶을 때
 
 `convert-xlsx-to-json`은 별도의 설정이 없으면 첫번째 시트의 데이터만을 변환합니다.<br/>
@@ -269,8 +317,11 @@ const entities = xlsxToJSON(xlsxPath, ["name", "age", "_", "etc"], 0, true, fals
 
 | name | type | required? | default |
 |:-:|:-:|:-:|:-:|
-| xlsxPath | string | true | - |
-| propKeys | string[] | true | - |
-| sheetIndex | integer | false | 0 |
-| omitHeader | boolean | false | true |
-| columnEntity | boolean | false | false |
+| xlsxPath | string | ✅ | - |
+| propKeys | string[] | ✅ | - |
+| sheetIndex | integer | | 0 |
+| omitHeader | boolean | | true |
+| columnEntity | boolean | | false |
+| range | string | | - |
+
+자세한 정보는 [매개변수 종류](#매개변수-종류)를 참고해주세요.
