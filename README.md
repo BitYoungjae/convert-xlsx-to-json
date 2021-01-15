@@ -1,5 +1,7 @@
 # convert-xlsx-to-json
 
+![Demo](./preview.png)
+
 `convert-xslx-to-json`은 `xlsx` 파일을 특정한 형태의 `JSON` 파일로 변환하기 위한 `CLI 도구` 등을 제공합니다.
 
 ## 목차

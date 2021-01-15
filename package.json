@@ -1,6 +1,6 @@
 {
   "name": "convert-xlsx-to-json",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "xlsx를 json 파일로 변환한다.",
   "main": "index.js",
   "scripts": {
